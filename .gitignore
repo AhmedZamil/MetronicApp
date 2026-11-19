@@ -6,3 +6,4 @@ node_modules/
 backend/**/App_Data/*.json
 *.user
 .DS_Store
+.vercel
