@@ -1,0 +1,254 @@
+{
+  "tenants": [
+    { "id": "northwind", "name": "Northwind Security" },
+    { "id": "harbor", "name": "Harbor Health" }
+  ],
+  "users": [
+    { "id": "ava", "name": "Ava Chen", "role": "analyst", "tenantId": "northwind" },
+    { "id": "noah", "name": "Noah Rahman", "role": "tenant-admin", "tenantId": "northwind" },
+    { "id": "maya", "name": "Maya Okonkwo", "role": "platform-admin", "tenantId": "northwind" }
+  ],
+  "forms": [
+    {
+      "key": "incident-intake",
+      "title": "Incident intake",
+      "description": "Capture severity, source, and who must be told when a security incident opens.",
+      "version": 1,
+      "scope": "tenant",
+      "layout": "stepper",
+      "steps": [
+        {
+          "id": "detect",
+          "title": "Detection",
+          "sections": [
+            {
+              "id": "summary",
+              "title": "Summary",
+              "rows": [
+                { "cols": [{ "span": 8, "field": "title" }, { "span": 4, "field": "severity" }] },
+                { "cols": [{ "span": 6, "field": "source" }, { "span": 6, "field": "detectedAt" }] }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "scope",
+          "title": "Scope",
+          "sections": [
+            {
+              "id": "impact",
+              "title": "Impact",
+              "rows": [
+                { "cols": [{ "span": 12, "field": "summary" }] },
+                { "cols": [{ "span": 12, "field": "systems" }] },
+                { "cols": [{ "span": 6, "field": "vendorName" }, { "span": 6, "field": "contractId" }] }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "notify",
+          "title": "Notify",
+          "sections": [
+            {
+              "id": "notification",
+              "title": "Notification",
+              "rows": [
+                { "cols": [{ "span": 12, "field": "execNotify" }] },
+                { "cols": [{ "span": 12, "field": "warRoom" }] },
+                { "cols": [{ "span": 12, "field": "notes" }] }
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "title": { "type": "text", "label": "Incident title", "required": true, "maxLength": 120 },
+        "severity": {
+          "type": "select",
+          "label": "Severity",
+          "required": true,
+          "options": [
+            { "value": "low", "label": "Low" },
+            { "value": "medium", "label": "Medium" },
+            { "value": "high", "label": "High" },
+            { "value": "critical", "label": "Critical" }
+          ]
+        },
+        "source": {
+          "type": "select",
+          "label": "Source",
+          "required": true,
+          "options": [
+            { "value": "internal", "label": "Internal" },
+            { "value": "third-party", "label": "Third party" }
+          ]
+        },
+        "detectedAt": { "type": "date", "label": "Detected", "required": true },
+        "summary": { "type": "textarea", "label": "What happened", "required": true, "minLength": 20 },
+        "systems": { "type": "text", "label": "Affected systems", "required": true },
+        "vendorName": {
+          "type": "text",
+          "label": "Vendor name",
+          "visibleWhen": { "field": "source", "op": "eq", "value": "third-party" },
+          "requiredWhen": { "field": "source", "op": "eq", "value": "third-party" }
+        },
+        "contractId": {
+          "type": "text",
+          "label": "Contract id",
+          "visibleWhen": { "field": "source", "op": "eq", "value": "third-party" }
+        },
+        "execNotify": {
+          "type": "checkbox",
+          "label": "Executive team notified",
+          "visibleWhen": { "field": "severity", "op": "eq", "value": "critical" },
+          "requiredWhen": { "field": "severity", "op": "eq", "value": "critical" }
+        },
+        "warRoom": {
+          "type": "text",
+          "label": "War-room bridge",
+          "visibleWhen": { "field": "severity", "op": "eq", "value": "critical" },
+          "requiredWhen": { "field": "severity", "op": "eq", "value": "critical" }
+        },
+        "notes": { "type": "textarea", "label": "Notify notes" }
+      }
+    },
+    {
+      "key": "vendor-assessment",
+      "title": "Vendor assessment",
+      "description": "Score a vendor and require a remediation plan when any control fails.",
+      "version": 1,
+      "scope": "global",
+      "layout": "page",
+      "steps": [
+        {
+          "id": "assessment",
+          "title": "Assessment",
+          "sections": [
+            {
+              "id": "vendor",
+              "title": "Vendor",
+              "rows": [
+                { "cols": [{ "span": 6, "field": "vendor" }, { "span": 6, "field": "country" }] },
+                { "cols": [{ "span": 6, "field": "region" }] },
+                { "cols": [{ "span": 12, "field": "controls" }] },
+                { "cols": [{ "span": 12, "field": "remediation" }] }
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "vendor": { "type": "text", "label": "Vendor", "required": true, "maxLength": 120 },
+        "country": {
+          "type": "select",
+          "label": "Country",
+          "required": true,
+          "options": [
+            { "value": "US", "label": "United States" },
+            { "value": "UK", "label": "United Kingdom" }
+          ]
+        },
+        "region": {
+          "type": "select",
+          "label": "Region",
+          "required": true,
+          "optionsFrom": {
+            "field": "country",
+            "map": {
+              "US": [
+                { "value": "CA", "label": "California" },
+                { "value": "NY", "label": "New York" },
+                { "value": "TX", "label": "Texas" }
+              ],
+              "UK": [
+                { "value": "ENG", "label": "England" },
+                { "value": "SCT", "label": "Scotland" },
+                { "value": "WLS", "label": "Wales" },
+                { "value": "NIR", "label": "Northern Ireland" }
+              ]
+            }
+          }
+        },
+        "controls": {
+          "type": "repeater",
+          "label": "Security controls",
+          "minItems": 1,
+          "itemFields": {
+            "controlName": { "type": "text", "label": "Control", "required": true, "maxLength": 80 },
+            "status": {
+              "type": "select",
+              "label": "Result",
+              "required": true,
+              "options": [
+                { "value": "pass", "label": "Pass" },
+                { "value": "fail", "label": "Fail" }
+              ]
+            }
+          }
+        },
+        "remediation": {
+          "type": "textarea",
+          "label": "Remediation plan",
+          "visibleWhen": { "field": "controls.status", "op": "in", "value": ["fail"] },
+          "requiredWhen": { "field": "controls.status", "op": "in", "value": ["fail"] }
+        }
+      }
+    }
+  ],
+  "submissions": [
+    {
+      "id": "sub_seed_1",
+      "formKey": "incident-intake",
+      "formTitle": "Incident intake",
+      "tenantId": "northwind",
+      "submittedBy": "Ava Chen",
+      "submittedAt": "2026-11-12T14:10:00.000Z",
+      "values": {
+        "title": "Vendor VPN token replay",
+        "severity": "critical",
+        "source": "third-party",
+        "detectedAt": "2026-11-12",
+        "summary": "Repeated authentication from a decommissioned vendor account.",
+        "systems": "VPN gateway, IdP",
+        "vendorName": "Northspan",
+        "contractId": "NS-14",
+        "execNotify": true,
+        "warRoom": "bridge-441",
+        "notes": "Customer success informed."
+      }
+    },
+    {
+      "id": "sub_seed_2",
+      "formKey": "incident-intake",
+      "formTitle": "Incident intake",
+      "tenantId": "northwind",
+      "submittedBy": "Ava Chen",
+      "submittedAt": "2026-11-16T09:40:00.000Z",
+      "values": {
+        "title": "Lobby badge reader offline",
+        "severity": "low",
+        "source": "internal",
+        "detectedAt": "2026-11-16",
+        "summary": "The south lobby badge reader stopped responding to cards.",
+        "systems": "Badge controller B2",
+        "notes": "Facilities ticket opened."
+      }
+    },
+    {
+      "id": "sub_seed_3",
+      "formKey": "vendor-assessment",
+      "formTitle": "Vendor assessment",
+      "tenantId": "northwind",
+      "submittedBy": "Noah Rahman",
+      "submittedAt": "2026-11-18T16:05:00.000Z",
+      "values": {
+        "vendor": "Northspan",
+        "country": "US",
+        "region": "CA",
+        "controls": [{ "controlName": "MFA", "status": "fail" }],
+        "remediation": "Enforce phishing resistant MFA before the renewal date."
+      }
+    }
+  ]
+}

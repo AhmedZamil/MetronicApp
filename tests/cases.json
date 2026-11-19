@@ -1,0 +1,231 @@
+[
+  {
+    "name": "low severity hides executive fields",
+    "schema": "incident-intake",
+    "values": { "severity": "low" },
+    "expect": { "visible": { "execNotify": false, "warRoom": false } }
+  },
+  {
+    "name": "critical severity shows executive fields",
+    "schema": "incident-intake",
+    "values": { "severity": "critical" },
+    "expect": { "visible": { "execNotify": true, "warRoom": true } }
+  },
+  {
+    "name": "internal source hides vendor fields",
+    "schema": "incident-intake",
+    "values": { "source": "internal" },
+    "expect": { "visible": { "vendorName": false, "contractId": false } }
+  },
+  {
+    "name": "third-party source shows vendor fields",
+    "schema": "incident-intake",
+    "values": { "source": "third-party" },
+    "expect": { "visible": { "vendorName": true, "contractId": true } }
+  },
+  {
+    "name": "hidden executive fields are not required",
+    "schema": "incident-intake",
+    "step": "notify",
+    "values": { "severity": "low", "notes": "" },
+    "expect": { "errors": {} }
+  },
+  {
+    "name": "critical incident requires notification fields",
+    "schema": "incident-intake",
+    "step": "notify",
+    "values": { "severity": "critical", "execNotify": false, "warRoom": "" },
+    "expect": {
+      "errors": {
+        "execNotify": ["This field is required."],
+        "warRoom": ["This field is required."]
+      }
+    }
+  },
+  {
+    "name": "third-party vendor name is required",
+    "schema": "incident-intake",
+    "step": "scope",
+    "values": {
+      "source": "third-party",
+      "summary": "A partner account authenticated after the contract ended.",
+      "systems": "VPN",
+      "vendorName": ""
+    },
+    "expect": { "errors": { "vendorName": ["This field is required."] } }
+  },
+  {
+    "name": "title is required on the first step only",
+    "schema": "incident-intake",
+    "step": "detect",
+    "values": { "title": "", "severity": "low", "source": "internal", "detectedAt": "2026-11-18" },
+    "expect": { "errorKeys": ["title"] }
+  },
+  {
+    "name": "title rejects more than 120 characters",
+    "schema": "incident-intake",
+    "values": { "title": "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT" },
+    "only": ["title"],
+    "expect": { "errors": { "title": ["Enter at most 120 characters."] } }
+  },
+  {
+    "name": "summary requires 20 characters",
+    "schema": "incident-intake",
+    "only": ["summary"],
+    "values": { "summary": "Too short" },
+    "expect": { "errors": { "summary": ["Enter at least 20 characters."] } }
+  },
+  {
+    "name": "hidden vendor fields leave the payload",
+    "schema": "incident-intake",
+    "values": {
+      "title": "Lobby badge reader offline",
+      "severity": "low",
+      "source": "internal",
+      "detectedAt": "2026-11-16",
+      "summary": "The south lobby badge reader stopped responding to cards.",
+      "systems": "Badge controller B2",
+      "vendorName": "Should vanish",
+      "contractId": "HIDE",
+      "execNotify": true,
+      "warRoom": "bridge",
+      "notes": ""
+    },
+    "expect": { "payloadOmits": ["vendorName", "contractId", "execNotify", "warRoom"] }
+  },
+  {
+    "name": "stale region clears when country changes",
+    "fn": "prepared",
+    "schema": "vendor-assessment",
+    "values": { "country": "UK", "region": "CA" },
+    "expect": { "prepared": { "region": "" } }
+  },
+  {
+    "name": "country drives region options",
+    "fn": "options",
+    "schema": "vendor-assessment",
+    "field": "region",
+    "values": { "country": "UK" },
+    "expect": { "optionValues": ["ENG", "SCT", "WLS", "NIR"] }
+  },
+  {
+    "name": "vendor repeater requires one row",
+    "schema": "vendor-assessment",
+    "values": { "vendor": "Northspan", "country": "US", "region": "CA", "controls": [] },
+    "expect": { "errors": { "controls": ["Add at least 1 item(s)."] } }
+  },
+  {
+    "name": "remaining repeater row stays at index 0",
+    "schema": "vendor-assessment",
+    "values": {
+      "vendor": "Northspan",
+      "country": "US",
+      "region": "NY",
+      "controls": [{ "controlName": "", "status": "pass" }]
+    },
+    "expect": { "errors": { "controls[0].controlName": ["This field is required."] } }
+  },
+  {
+    "name": "failed control shows and requires remediation",
+    "schema": "vendor-assessment",
+    "values": {
+      "vendor": "Northspan",
+      "country": "US",
+      "region": "TX",
+      "controls": [{ "controlName": "MFA", "status": "fail" }],
+      "remediation": ""
+    },
+    "expect": {
+      "visible": { "remediation": true },
+      "errors": { "remediation": ["This field is required."] }
+    }
+  },
+  {
+    "name": "passing controls omit remediation",
+    "schema": "vendor-assessment",
+    "values": {
+      "vendor": "Northspan",
+      "country": "US",
+      "region": "CA",
+      "controls": [{ "controlName": "MFA", "status": "pass" }],
+      "remediation": "Not needed"
+    },
+    "expect": { "visible": { "remediation": false }, "payloadOmits": ["remediation"], "errors": {} }
+  },
+  {
+    "name": "email format",
+    "schemaInline": {
+      "key": "contact",
+      "title": "Contact",
+      "scope": "tenant",
+      "version": 1,
+      "steps": [{ "id": "main", "title": "Main", "sections": [{ "id": "s", "title": "S", "rows": [{ "cols": [{ "span": 12, "field": "email" }] }] }] }],
+      "fields": { "email": { "type": "email", "label": "Email", "required": true } }
+    },
+    "values": { "email": "not-an-email" },
+    "expect": { "errors": { "email": ["Enter a valid email address."] } }
+  },
+  {
+    "name": "pattern format",
+    "schemaInline": {
+      "key": "ticket",
+      "title": "Ticket",
+      "scope": "tenant",
+      "version": 1,
+      "steps": [{ "id": "main", "title": "Main", "sections": [{ "id": "s", "title": "S", "rows": [{ "cols": [{ "span": 6, "field": "code" }] }] }] }],
+      "fields": { "code": { "type": "text", "label": "Code", "required": true, "pattern": "^INC-[0-9]{4}$" } }
+    },
+    "values": { "code": "INCIDENT" },
+    "expect": { "errors": { "code": ["Enter a value in the expected format."] } }
+  },
+  {
+    "name": "number minimum",
+    "schemaInline": {
+      "key": "score",
+      "title": "Score",
+      "scope": "tenant",
+      "version": 1,
+      "steps": [{ "id": "main", "title": "Main", "sections": [{ "id": "s", "title": "S", "rows": [{ "cols": [{ "span": 4, "field": "score" }] }] }] }],
+      "fields": { "score": { "type": "number", "label": "Score", "required": true, "min": 1, "max": 5 } }
+    },
+    "values": { "score": "0" },
+    "expect": { "errors": { "score": ["Enter a number of at least 1."] } }
+  },
+  { "name": "analyst cannot edit", "fn": "access", "role": "analyst", "schema": "incident-intake", "expect": false },
+  { "name": "tenant admin edits tenant forms", "fn": "access", "role": "tenant-admin", "schema": "incident-intake", "expect": true },
+  { "name": "tenant admin cannot edit the global template", "fn": "access", "role": "tenant-admin", "schema": "vendor-assessment", "expect": false },
+  { "name": "platform admin edits the global template", "fn": "access", "role": "platform-admin", "schema": "vendor-assessment", "expect": true },
+  { "name": "harbor sees no northwind submissions", "fn": "filter", "kind": "submissions", "tenantId": "harbor", "expectIds": [] },
+  { "name": "northwind sees seeded submissions", "fn": "filter", "kind": "submissions", "tenantId": "northwind", "expectIds": ["sub_seed_1", "sub_seed_2", "sub_seed_3"] },
+  { "name": "both tenants see both forms", "fn": "filter", "kind": "forms", "tenantId": "harbor", "expectKeys": ["incident-intake", "vendor-assessment"] },
+  { "name": "seed incident schema is valid", "fn": "shape", "schema": "incident-intake", "expectValid": true },
+  { "name": "seed vendor schema is valid", "fn": "shape", "schema": "vendor-assessment", "expectValid": true },
+  {
+    "name": "bad span is rejected",
+    "fn": "shape",
+    "mutateSpan": "title",
+    "schema": "incident-intake",
+    "expectValid": false,
+    "expectErrorIncludes": "Column span"
+  },
+  { "name": "referenced severity cannot be removed", "fn": "remove", "schema": "incident-intake", "field": "severity", "expectOk": false },
+  { "name": "unreferenced notes can be removed", "fn": "remove", "schema": "incident-intake", "field": "notes", "expectOk": true },
+  {
+    "name": "studio can add ticket url",
+    "fn": "add",
+    "schema": "incident-intake",
+    "spec": {
+      "id": "ticketUrl",
+      "label": "Ticket URL",
+      "type": "text",
+      "required": true,
+      "span": 12,
+      "step": "notify",
+      "visibleWhen": { "field": "severity", "op": "eq", "value": "critical" }
+    },
+    "expectOk": true
+  },
+  { "name": "seed incident submission is valid", "fn": "seedValid", "id": "sub_seed_1" },
+  { "name": "seed low incident submission is valid", "fn": "seedValid", "id": "sub_seed_2" },
+  { "name": "seed vendor submission is valid", "fn": "seedValid", "id": "sub_seed_3" }
+]

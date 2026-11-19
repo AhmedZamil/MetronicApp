@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SkyLake.Api.Tests/SkyLake.Api.Tests.csproj" />
+  <Project Path="SkyLake.Api/SkyLake.Api.csproj" />
+</Solution>

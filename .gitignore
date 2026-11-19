@@ -1,0 +1,8 @@
+bin/
+obj/
+.vercel/
+theme/
+node_modules/
+backend/**/App_Data/*.json
+*.user
+.DS_Store
