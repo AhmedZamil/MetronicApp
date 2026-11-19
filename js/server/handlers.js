@@ -1,16 +1,13 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import seedFile from "../../data/seed.json" with { type: "json" };
 import { clone, syncValues } from "../engine/rules.js";
 import { canEditSchema, formsForTenant, submissionsForTenant, validateSchemaShape } from "../engine/schema.js";
 import { toPayload, validate } from "../engine/validate.js";
 
 const ROLES = new Set(["analyst", "tenant-admin", "platform-admin"]);
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 let cached;
 
 export function loadSeed() {
-  if (!cached) cached = JSON.parse(readFileSync(path.join(root, "data", "seed.json"), "utf8"));
+  if (!cached) cached = clone(seedFile);
   return cached;
 }
 
